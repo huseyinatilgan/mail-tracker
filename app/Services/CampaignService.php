@@ -52,12 +52,12 @@ class CampaignService
     /**
      * Kullanıcının kampanyalarını getir
      */
-    public function getUserCampaigns(int $userId)
+    public function getUserCampaigns(int $userId, int $perPage = 10)
     {
         return Campaign::where('user_id', $userId)
             ->withCount('events')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
