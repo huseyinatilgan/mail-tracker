@@ -360,12 +360,6 @@ docker-compose up -d
 - **Documentation** for new features
 - **Test coverage** for all changes
 
-## 📝 License / Lisans
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-Bu proje MIT Lisansı altında lisanslanmıştır - detaylar için [LICENSE](LICENSE) dosyasına bakın.
-
 ## 👥 Authors / Yazarlar
 
 - **Hüseyin Atılgan** - *Initial work* - [huseyinatilgan](https://github.com/huseyinatilgan)
@@ -377,13 +371,6 @@ Bu proje MIT Lisansı altında lisanslanmıştır - detaylar için [LICENSE](LIC
 - **FontAwesome** for the beautiful icons
 - **Open source community** for inspiration and support
 
-## 📞 Support / Destek
-
-### Getting Help / Yardım Alma
-- **Documentation**: Check the docs folder
-- **Issues**: Create an issue on GitHub
-- **Discussions**: Use GitHub Discussions
-- **Email**: Contact the maintainer
 
 ### Bug Reports / Hata Raporları
 Please use the [GitHub issue tracker](https://github.com/huseyinatilgan/mail-tracker/issues) to report bugs.
@@ -392,13 +379,3 @@ Please use the [GitHub issue tracker](https://github.com/huseyinatilgan/mail-tra
 Use the [GitHub Discussions](https://github.com/huseyinatilgan/mail-tracker/discussions) to request new features.
 
 ---
-
-## ⭐ Star History / Yıldız Geçmişi
-
-[![Star History Chart](https://api.star-history.com/svg?repos=huseyinatilgan/mail-tracker&type=Date)](https://star-history.com/#huseyinatilgan/mail-tracker&Date)
-
----
-
-**Made with ❤️ by the MailTracker Team**
-
-**MailTracker Ekibi tarafından ❤️ ile yapıldı** 
