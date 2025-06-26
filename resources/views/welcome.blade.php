@@ -199,49 +199,17 @@
         <!-- Footer -->
         <footer class="bg-gray-900 text-white py-12">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid md:grid-cols-4 gap-8">
-                    <div>
-                        <div class="flex items-center mb-4">
-                            <i class="fas fa-envelope-open text-2xl text-blue-400 mr-2"></i>
-                            <span class="text-xl font-bold">MailTracker</span>
-                        </div>
-                        <p class="text-gray-400">
-                            E-posta kampanya takip sistemi ile kampanyalarınızı optimize edin.
-                        </p>
+                <div class="flex flex-col items-start mb-8">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-envelope-open text-2xl text-blue-400 mr-2"></i>
+                        <span class="text-xl font-bold">MailTracker</span>
                     </div>
-                    <div>
-                        <h3 class="text-lg font-semibold mb-4">Özellikler</h3>
-                        <ul class="space-y-2 text-gray-400">
-                            <li><a href="#" class="hover:text-white">Gerçek Zamanlı Takip</a></li>
-                            <li><a href="#" class="hover:text-white">Detaylı Analitik</a></li>
-                            <li><a href="#" class="hover:text-white">Güvenli Tracking</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold mb-4">Destek</h3>
-                        <ul class="space-y-2 text-gray-400">
-                            <li><a href="#" class="hover:text-white">Yardım Merkezi</a></li>
-                            <li><a href="#" class="hover:text-white">İletişim</a></li>
-                            <li><a href="#" class="hover:text-white">SSS</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold mb-4">Sosyal Medya</h3>
-                        <div class="flex space-x-4">
-                            <a href="#" class="text-gray-400 hover:text-white">
-                                <i class="fab fa-twitter text-xl"></i>
-                            </a>
-                            <a href="#" class="text-gray-400 hover:text-white">
-                                <i class="fab fa-linkedin text-xl"></i>
-                            </a>
-                            <a href="#" class="text-gray-400 hover:text-white">
-                                <i class="fab fa-github text-xl"></i>
-                            </a>
-                        </div>
-                    </div>
+                    <p class="text-gray-400">
+                        E-posta kampanya takip sistemi ile kampanyalarınızı optimize edin.
+                    </p>
                 </div>
-                <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                    <p>&copy; 2024 MailTracker. Tüm hakları saklıdır.</p>
+                <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+                    <p>&copy; 2025 MailTracker | Açık Kaynak Proje</p>
                 </div>
             </div>
         </footer>
