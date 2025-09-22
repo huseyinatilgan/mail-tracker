@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Campaign;
+use App\Models\Event;
 use Illuminate\Support\Str;
 
 class CampaignService
@@ -72,4 +73,24 @@ class CampaignService
             }])
             ->first();
     }
-} 
+
+    /**
+     * Kullanıcının kampanyalarına ait istatistikleri getir
+     */
+    public function getUserCampaignSummary(int $userId): array
+    {
+        $totalCampaigns = Campaign::where('user_id', $userId)->count();
+
+        $totalEvents = Event::whereHas('campaign', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->count();
+
+        return [
+            'total_campaigns' => $totalCampaigns,
+            'total_events' => $totalEvents,
+            'average_reads' => $totalCampaigns > 0
+                ? round($totalEvents / $totalCampaigns, 1)
+                : 0,
+        ];
+    }
+}

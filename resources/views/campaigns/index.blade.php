@@ -39,7 +39,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-600">Toplam Kampanya</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $campaigns->count() }}</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $summary['total_campaigns'] ?? 0 }}</p>
                         </div>
                     </div>
                 </div>
@@ -51,7 +51,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-600">Toplam Okunma</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $campaigns->sum('events_count') ?? 0 }}</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $summary['total_events'] ?? 0 }}</p>
                         </div>
                     </div>
                 </div>
@@ -63,7 +63,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-600">Ortalama Okunma</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $campaigns->count() > 0 ? round($campaigns->sum('events_count') / $campaigns->count(), 1) : 0 }}</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $summary['average_reads'] ?? 0 }}</p>
                         </div>
                     </div>
                 </div>
@@ -99,8 +99,11 @@
                                                 <div class="flex items-center space-x-4 mt-1">
                                                     <div class="flex items-center space-x-2">
                                                         <code class="bg-gray-200 text-gray-800 px-2 py-1 rounded text-sm font-mono">{{ $campaign->key }}</code>
-                                                        <button onclick="copyToClipboard('{{ $campaign->key }}')" 
+                                                        <button onclick="copyToClipboard(event, '{{ $campaign->key }}')"
                                                                 class="w-6 h-6 bg-gray-200 hover:bg-gray-300 rounded flex items-center justify-center transition-colors duration-200"
+                                                                data-success-icon="fas fa-check text-green-600 text-xs"
+                                                                data-success-classes="bg-green-200"
+                                                                data-success-remove-classes="bg-gray-200 hover:bg-gray-300"
                                                                 title="Key'i kopyala">
                                                             <i class="fas fa-copy text-gray-600 text-xs"></i>
                                                         </button>
@@ -181,20 +184,56 @@
     </div>
 
     <script>
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(function() {
-                const button = event.target.closest('button');
-                const originalIcon = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-check text-green-600 text-xs"></i>';
-                button.classList.remove('bg-gray-200', 'hover:bg-gray-300');
-                button.classList.add('bg-green-200');
-                
+        function copyToClipboard(event, text) {
+            event.preventDefault();
+
+            const button = event.currentTarget;
+
+            if (!button.dataset.originalClasses) {
+                button.dataset.originalClasses = button.className;
+            }
+
+            const icon = button.querySelector('i');
+
+            if (icon && !button.dataset.originalIconClasses) {
+                button.dataset.originalIconClasses = icon.className;
+            }
+
+            navigator.clipboard.writeText(text).then(function () {
+                const successIcon = button.dataset.successIcon || 'fas fa-check text-green-600';
+                const classesToAdd = (button.dataset.successClasses || '').split(' ').filter(Boolean);
+                const classesToRemove = (button.dataset.successRemoveClasses || '').split(' ').filter(Boolean);
+
+                if (icon && successIcon) {
+                    icon.className = successIcon;
+                }
+
+                if (classesToRemove.length) {
+                    button.classList.remove(...classesToRemove);
+                }
+
+                if (classesToAdd.length) {
+                    button.classList.add(...classesToAdd);
+                }
+
                 setTimeout(() => {
-                    button.innerHTML = originalIcon;
-                    button.classList.remove('bg-green-200');
-                    button.classList.add('bg-gray-200', 'hover:bg-gray-300');
+                    if (icon && button.dataset.originalIconClasses) {
+                        icon.className = button.dataset.originalIconClasses;
+                    }
+
+                    if (button.dataset.originalClasses) {
+                        button.className = button.dataset.originalClasses;
+                    }
                 }, 1000);
+            }).catch(function () {
+                if (button.dataset.originalClasses) {
+                    button.className = button.dataset.originalClasses;
+                }
+
+                if (icon && button.dataset.originalIconClasses) {
+                    icon.className = button.dataset.originalIconClasses;
+                }
             });
         }
     </script>
-</x-app-layout> 
+</x-app-layout>

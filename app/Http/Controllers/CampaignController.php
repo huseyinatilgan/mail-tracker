@@ -25,7 +25,9 @@ class CampaignController extends Controller
     public function index()
     {
         $campaigns = $this->campaignService->getUserCampaigns(auth()->id());
-        return view('campaigns.index', compact('campaigns'));
+        $summary = $this->campaignService->getUserCampaignSummary(auth()->id());
+
+        return view('campaigns.index', compact('campaigns', 'summary'));
     }
 
     /**

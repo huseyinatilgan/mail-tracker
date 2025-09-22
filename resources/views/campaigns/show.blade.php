@@ -38,8 +38,11 @@
                             <td><strong>Tracking Key:</strong></td>
                             <td>
                                 <code class="bg-light p-1 rounded">{{ $campaign->key }}</code>
-                                <button class="btn btn-sm btn-outline-secondary ms-2" 
-                                        onclick="copyToClipboard('{{ $campaign->key }}')"
+                                <button class="btn btn-sm btn-outline-secondary ms-2"
+                                        onclick="copyToClipboard(event, '{{ $campaign->key }}')"
+                                        data-success-icon="fas fa-check"
+                                        data-success-classes="btn-success"
+                                        data-success-remove-classes="btn-outline-secondary"
                                         title="Key'i kopyala">
                                     <i class="fas fa-copy"></i>
                                 </button>
@@ -72,8 +75,11 @@
                             &lt;img src="{{ url('/track/' . $campaign->key) }}" width="1" height="1"&gt;
                         </code>
                     </div>
-                    <button class="btn btn-sm btn-outline-primary mt-2" 
-                            onclick="copyToClipboard('&lt;img src=&quot;{{ url('/track/' . $campaign->key) }}&quot; width=&quot;1&quot; height=&quot;1&quot;&gt;')"
+                    <button class="btn btn-sm btn-outline-primary mt-2"
+                            onclick="copyToClipboard(event, '&lt;img src=&quot;{{ url('/track/' . $campaign->key) }}&quot; width=&quot;1&quot; height=&quot;1&quot;&gt;')"
+                            data-success-icon="fas fa-check me-2"
+                            data-success-classes="btn-success"
+                            data-success-remove-classes="btn-outline-primary"
                             title="Tracking kodunu kopyala">
                         <i class="fas fa-copy me-2"></i>
                         Kodu Kopyala
@@ -215,25 +221,56 @@
     </div>
 
     <script>
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(function() {
-                // Başarılı kopyalama bildirimi
-                const button = event.target.closest('button');
-                const originalIcon = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-check"></i>';
-                button.classList.remove('btn-outline-secondary', 'btn-outline-primary');
-                button.classList.add('btn-success');
-                
+        function copyToClipboard(event, text) {
+            event.preventDefault();
+
+            const button = event.currentTarget;
+
+            if (!button.dataset.originalClasses) {
+                button.dataset.originalClasses = button.className;
+            }
+
+            const icon = button.querySelector('i');
+
+            if (icon && !button.dataset.originalIconClasses) {
+                button.dataset.originalIconClasses = icon.className;
+            }
+
+            navigator.clipboard.writeText(text).then(function () {
+                const successIcon = button.dataset.successIcon || 'fas fa-check';
+                const classesToAdd = (button.dataset.successClasses || '').split(' ').filter(Boolean);
+                const classesToRemove = (button.dataset.successRemoveClasses || '').split(' ').filter(Boolean);
+
+                if (icon && successIcon) {
+                    icon.className = successIcon;
+                }
+
+                if (classesToRemove.length) {
+                    button.classList.remove(...classesToRemove);
+                }
+
+                if (classesToAdd.length) {
+                    button.classList.add(...classesToAdd);
+                }
+
                 setTimeout(() => {
-                    button.innerHTML = originalIcon;
-                    button.classList.remove('btn-success');
-                    if (originalIcon.includes('btn-outline-secondary')) {
-                        button.classList.add('btn-outline-secondary');
-                    } else {
-                        button.classList.add('btn-outline-primary');
+                    if (icon && button.dataset.originalIconClasses) {
+                        icon.className = button.dataset.originalIconClasses;
+                    }
+
+                    if (button.dataset.originalClasses) {
+                        button.className = button.dataset.originalClasses;
                     }
                 }, 1000);
+            }).catch(function () {
+                if (button.dataset.originalClasses) {
+                    button.className = button.dataset.originalClasses;
+                }
+
+                if (icon && button.dataset.originalIconClasses) {
+                    icon.className = button.dataset.originalIconClasses;
+                }
             });
         }
     </script>
-</x-app-layout> 
+</x-app-layout>

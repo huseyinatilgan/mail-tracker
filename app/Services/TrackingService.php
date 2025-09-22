@@ -45,22 +45,39 @@ class TrackingService
      */
     public function getCampaignStats(int $campaignId): array
     {
-        $campaign = Campaign::with('events')->find($campaignId);
-
-        if (!$campaign) {
+        if (!Campaign::whereKey($campaignId)->exists()) {
             return [];
         }
 
-        $totalEvents = $campaign->events->count();
-        $todayEvents = $campaign->events->where('opened_at', '>=', now()->startOfDay())->count();
-        $weekEvents = $campaign->events->where('opened_at', '>=', now()->subWeek())->count();
-        $monthEvents = $campaign->events->where('opened_at', '>=', now()->subMonth())->count();
+        $now = now();
+        $startOfDay = $now->copy()->startOfDay();
+        $startOfWeek = $now->copy()->subWeek();
+        $startOfMonth = $now->copy()->subMonth();
+
+        $stats = Event::where('campaign_id', $campaignId)
+            ->selectRaw(
+                'COUNT(*) as total,
+                SUM(CASE WHEN opened_at >= ? THEN 1 ELSE 0 END) as today,
+                SUM(CASE WHEN opened_at >= ? THEN 1 ELSE 0 END) as week,
+                SUM(CASE WHEN opened_at >= ? THEN 1 ELSE 0 END) as month',
+                [$startOfDay, $startOfWeek, $startOfMonth]
+            )
+            ->first();
+
+        if (!$stats) {
+            return [
+                'total' => 0,
+                'today' => 0,
+                'week' => 0,
+                'month' => 0,
+            ];
+        }
 
         return [
-            'total' => $totalEvents,
-            'today' => $todayEvents,
-            'week' => $weekEvents,
-            'month' => $monthEvents,
+            'total' => (int) ($stats->total ?? 0),
+            'today' => (int) ($stats->today ?? 0),
+            'week' => (int) ($stats->week ?? 0),
+            'month' => (int) ($stats->month ?? 0),
         ];
     }
 
@@ -69,26 +86,37 @@ class TrackingService
      */
     public function getDashboardStats(int $userId): array
     {
-        $campaigns = Campaign::where('user_id', $userId)->with('events')->get();
+        $totalCampaigns = Campaign::where('user_id', $userId)->count();
 
-        $totalCampaigns = $campaigns->count();
-        $totalEvents = $campaigns->sum(function ($campaign) {
-            return $campaign->events->count();
-        });
+        $now = now();
+        $startOfDay = $now->copy()->startOfDay();
+        $startOfWeek = $now->copy()->subWeek();
 
-        $todayEvents = $campaigns->sum(function ($campaign) {
-            return $campaign->events->where('opened_at', '>=', now()->startOfDay())->count();
-        });
+        $eventStats = Event::whereHas('campaign', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })
+            ->selectRaw(
+                'COUNT(*) as total,
+                SUM(CASE WHEN opened_at >= ? THEN 1 ELSE 0 END) as today,
+                SUM(CASE WHEN opened_at >= ? THEN 1 ELSE 0 END) as week',
+                [$startOfDay, $startOfWeek]
+            )
+            ->first();
 
-        $weekEvents = $campaigns->sum(function ($campaign) {
-            return $campaign->events->where('opened_at', '>=', now()->subWeek())->count();
-        });
+        if (!$eventStats) {
+            return [
+                'total_campaigns' => $totalCampaigns,
+                'total_events' => 0,
+                'today_events' => 0,
+                'week_events' => 0,
+            ];
+        }
 
         return [
             'total_campaigns' => $totalCampaigns,
-            'total_events' => $totalEvents,
-            'today_events' => $todayEvents,
-            'week_events' => $weekEvents,
+            'total_events' => (int) ($eventStats->total ?? 0),
+            'today_events' => (int) ($eventStats->today ?? 0),
+            'week_events' => (int) ($eventStats->week ?? 0),
         ];
     }
-} 
+}
