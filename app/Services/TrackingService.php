@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Campaign;
 use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class TrackingService
 {
@@ -13,31 +15,126 @@ class TrackingService
      */
     public function trackEvent(string $campaignKey, Request $request): bool
     {
-        $campaign = Campaign::where('key', $campaignKey)->first();
+        try {
+            // Key formatını doğrula (sadece alfanumerik, 20 karakter)
+            if (!preg_match('/^[a-zA-Z0-9]{20}$/', $campaignKey)) {
+                Log::warning('Invalid tracking key format', [
+                    'key' => Str::limit($campaignKey, 50),
+                    'ip' => $request->ip(),
+                ]);
+                return false;
+            }
 
-        if (!$campaign) {
+            $campaign = Campaign::where('key', $campaignKey)->first();
+
+            if (!$campaign) {
+                Log::info('Campaign not found for tracking', [
+                    'key' => $campaignKey,
+                    'ip' => $request->ip(),
+                ]);
+                return false;
+            }
+
+            // IP adresini doğrula ve sanitize et
+            $ipAddress = $this->sanitizeIpAddress($request->ip());
+            if (!$ipAddress) {
+                Log::warning('Invalid IP address', [
+                    'ip' => $request->ip(),
+                    'campaign_id' => $campaign->id,
+                ]);
+                return false;
+            }
+
+            // Rate limiting kontrolü - aynı IP'den 1 dakikada 1 kez
+            $recentEvent = Event::where('campaign_id', $campaign->id)
+                ->where('ip_address', $ipAddress)
+                ->where('opened_at', '>=', now()->subMinute())
+                ->first();
+
+            if ($recentEvent) {
+                return false;
+            }
+
+            // User Agent'ı sanitize et ve uzunluğunu sınırla
+            $userAgent = $this->sanitizeUserAgent($request->userAgent());
+            
+            // Email'i sanitize et ve doğrula
+            $userEmail = $this->sanitizeEmail($request->get('email'));
+
+            Event::create([
+                'campaign_id' => $campaign->id,
+                'user_agent' => $userAgent,
+                'ip_address' => $ipAddress,
+                'user_email' => $userEmail,
+                'opened_at' => now(),
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Error tracking event', [
+                'key' => Str::limit($campaignKey, 50),
+                'ip' => $request->ip(),
+                'error' => $e->getMessage(),
+            ]);
             return false;
         }
+    }
 
-        // Rate limiting kontrolü - aynı IP'den 1 dakikada 1 kez
-        $recentEvent = Event::where('campaign_id', $campaign->id)
-            ->where('ip_address', $request->ip())
-            ->where('opened_at', '>=', now()->subMinute())
-            ->first();
-
-        if ($recentEvent) {
-            return false;
+    /**
+     * IP adresini doğrula ve sanitize et
+     */
+    private function sanitizeIpAddress(?string $ip): ?string
+    {
+        if (empty($ip)) {
+            return null;
         }
 
-        Event::create([
-            'campaign_id' => $campaign->id,
-            'user_agent' => $request->userAgent(),
-            'ip_address' => $request->ip(),
-            'user_email' => $request->get('email'),
-            'opened_at' => now(),
-        ]);
+        // IPv4 ve IPv6 formatlarını kontrol et
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            return $ip;
+        }
 
-        return true;
+        // Private IP'ler de kabul edilebilir (localhost, internal network)
+        if (filter_var($ip, FILTER_VALIDATE_IP)) {
+            return $ip;
+        }
+
+        return null;
+    }
+
+    /**
+     * User Agent'ı sanitize et
+     */
+    private function sanitizeUserAgent(?string $userAgent): ?string
+    {
+        if (empty($userAgent)) {
+            return null;
+        }
+
+        // Maksimum 500 karakter (veritabanı text alanı için)
+        $userAgent = Str::limit(strip_tags($userAgent), 500);
+        
+        // Sadece güvenli karakterlere izin ver
+        return preg_replace('/[^\x20-\x7E\x80-\xFF]/', '', $userAgent) ?: null;
+    }
+
+    /**
+     * Email'i sanitize et ve doğrula
+     */
+    private function sanitizeEmail(?string $email): ?string
+    {
+        if (empty($email)) {
+            return null;
+        }
+
+        $email = filter_var(trim($email), FILTER_SANITIZE_EMAIL);
+        
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            // Maksimum 255 karakter
+            return Str::limit($email, 255);
+        }
+
+        return null;
     }
 
     /**

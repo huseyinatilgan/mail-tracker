@@ -2,10 +2,22 @@
 
 namespace App\Providers;
 
+use App\Models\Campaign;
+use App\Policies\CampaignPolicy;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * The policy mappings for the application.
+     *
+     * @var array<class-string, class-string>
+     */
+    protected $policies = [
+        Campaign::class => CampaignPolicy::class,
+    ];
+
     /**
      * Register any application services.
      */
@@ -19,6 +31,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Policy'leri kaydet
+        $this->registerPolicies();
+    }
+
+    /**
+     * Policy'leri kaydet
+     */
+    protected function registerPolicies(): void
+    {
+        foreach ($this->policies as $model => $policy) {
+            Gate::policy($model, $policy);
+        }
     }
 }

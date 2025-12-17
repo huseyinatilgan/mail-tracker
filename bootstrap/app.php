@@ -11,8 +11,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Güvenlik header'ları ekle
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Production'da detaylı hata mesajlarını gizle
+        if (app()->environment('production')) {
+            $exceptions->shouldRenderJsonWhen(function ($request, Throwable $e) {
+                return $request->expectsJson();
+            });
+        }
     })->create();

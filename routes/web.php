@@ -10,10 +10,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Tracking pixel route (auth gerektirmez)
-Route::get('/track/{key}', [TrackingController::class, 'track'])->name('tracking.pixel');
+// Tracking pixel route (auth gerektirmez, rate limiting ile korunur)
+Route::get('/track/{key}', [TrackingController::class, 'track'])
+    ->middleware('throttle:100,1')
+    ->name('tracking.pixel');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'throttle:60,1'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
@@ -21,7 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('campaigns', CampaignController::class);
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'throttle:60,1'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

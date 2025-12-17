@@ -54,10 +54,7 @@ class CampaignController extends Controller
      */
     public function show(Campaign $campaign)
     {
-        // Kullanıcının kendi kampanyası mı kontrol et
-        if ($campaign->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('view', $campaign);
 
         $campaign = $this->campaignService->getCampaignDetails($campaign->id, auth()->id());
         $stats = $this->trackingService->getCampaignStats($campaign->id);
@@ -70,10 +67,7 @@ class CampaignController extends Controller
      */
     public function edit(Campaign $campaign)
     {
-        // Kullanıcının kendi kampanyası mı kontrol et
-        if ($campaign->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('update', $campaign);
 
         return view('campaigns.edit', compact('campaign'));
     }
@@ -83,10 +77,7 @@ class CampaignController extends Controller
      */
     public function update(CampaignRequest $request, Campaign $campaign)
     {
-        // Kullanıcının kendi kampanyası mı kontrol et
-        if ($campaign->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('update', $campaign);
 
         $this->campaignService->updateCampaign($campaign, $request->validated());
 
@@ -99,10 +90,7 @@ class CampaignController extends Controller
      */
     public function destroy(Campaign $campaign)
     {
-        // Kullanıcının kendi kampanyası mı kontrol et
-        if ($campaign->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('delete', $campaign);
 
         $this->campaignService->deleteCampaign($campaign);
 
