@@ -364,14 +364,6 @@ docker-compose up -d
 
 - **Hüseyin Atılgan** - *Initial work* - [huseyinatilgan](https://github.com/huseyinatilgan)
 
-## 🙏 Acknowledgments / Teşekkürler
-
-- **Laravel Team** for the amazing framework
-- **Tailwind CSS** for the utility-first CSS framework
-- **FontAwesome** for the beautiful icons
-- **Open source community** for inspiration and support
-
-
 ### Bug Reports / Hata Raporları
 Please use the [GitHub issue tracker](https://github.com/huseyinatilgan/mail-tracker/issues) to report bugs.
 
