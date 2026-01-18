@@ -18,9 +18,11 @@ Route::get('/track/{key}', [TrackingController::class, 'track'])
 Route::middleware(['auth', 'verified', 'throttle:60,1'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
-    // Campaign routes
+
     Route::resource('campaigns', CampaignController::class);
+
+    // Webhook routes
+    Route::resource('webhooks', \App\Http\Controllers\WebhookController::class)->only(['index', 'store', 'destroy']);
 });
 
 Route::middleware(['auth', 'throttle:60,1'])->group(function () {
@@ -29,4 +31,4 @@ Route::middleware(['auth', 'throttle:60,1'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

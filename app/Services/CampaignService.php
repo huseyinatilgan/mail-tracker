@@ -19,6 +19,11 @@ class CampaignService
             // Generate Key
             $key = $this->generateUniqueKey();
 
+            // Enforce Seat Limit: 50 Campaigns Max
+            if (Campaign::where('user_id', $userId)->count() >= 50) {
+                throw new \Exception('Campaign limit reached (Max: 50). Please upgrade or delete old campaigns.');
+            }
+
             $campaign = Campaign::create([
                 'name' => $this->sanitizeCampaignName($data['name'] ?? ''),
                 'key_hash' => hash('sha256', $key),

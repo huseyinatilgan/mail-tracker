@@ -33,6 +33,12 @@ class AppServiceProvider extends ServiceProvider
     {
         // Policy'leri kaydet
         $this->registerPolicies();
+
+        // Register Action Layer Listeners
+        \Illuminate\Support\Facades\Event::listen(
+            \App\Events\SalesSignalDetected::class,
+            \App\Listeners\SendWebhooks::class
+        );
     }
 
     /**

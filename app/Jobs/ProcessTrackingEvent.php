@@ -32,7 +32,19 @@ class ProcessTrackingEvent implements ShouldQueue
     public function handle(): void
     {
         try {
-            Event::create($this->data);
+            $event = Event::create($this->data);
+
+            // Dispatch Sales Signal if it's not a proxy
+            // Strategy: "Signal without action is noise."
+            if (empty($this->data['is_proxy']) || $this->data['is_proxy'] === false) {
+                \App\Events\SalesSignalDetected::dispatch([
+                    'campaign_id' => $event->campaign_id,
+                    'event_id' => $event->id,
+                    'occurred_at' => $event->opened_at,
+                    'confidence' => 'high', // Validated unique open
+                    // Add other payload data as needed
+                ]);
+            }
         } catch (\Exception $e) {
             Log::error('Failed to process tracking event', [
                 'error' => $e->getMessage(),

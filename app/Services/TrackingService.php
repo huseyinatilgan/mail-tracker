@@ -42,13 +42,35 @@ class TrackingService
             Cache::add($rateLimitKey, 1, 60);
 
             // 2. Lookup Campaign by Hash
-            // Cache campaign ID lookup to avoid DB hit on every pixel load
-            $campaignId = Cache::remember("campaign_id:{$keyHash}", now()->addMinutes(10), function () use ($keyHash) {
-                return Campaign::where('key_hash', $keyHash)->value('id');
+            // Cache campaign ID and User ID to avoid DB hit on every pixel load
+            $campaignData = Cache::remember("campaign_data:{$keyHash}", now()->addMinutes(10), function () use ($keyHash) {
+                return Campaign::where('key_hash', $keyHash)->select('id', 'user_id')->first()?->toArray();
             });
+
+            if (!$campaignData) {
+                return false;
+            }
+
+            $campaignId = $campaignData['id'];
+            $userId = $campaignData['user_id'];
+
+            // Enforce Seat Limit: 1000 Events / Day
+            $today = now()->format('Y-m-d');
+            $seatLimitKey = "seat_limit:{$userId}:{$today}";
+
+            if (Cache::get($seatLimitKey, 0) >= 1000) {
+                Log::warning('Seat limit exceeded', ['user_id' => $userId]);
+                return false;
+            }
+            Cache::increment($seatLimitKey);
 
             if (!$campaignId) {
                 return false;
+            }
+
+            // Set expiration for seat limit if it's new (24 hours)
+            if (Cache::get($seatLimitKey) === 1) {
+                Cache::put($seatLimitKey, 1, now()->addDay());
             }
 
             // 3. Process Request Data

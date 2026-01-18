@@ -1,124 +1,106 @@
-# 🚀 MailTracker – Product, Architecture & Go-To-Market Strategy
+# 🚀 MailTracker – Product Strategy
+
 > **Confidential Internal Strategy Document**
 
-## 1️⃣ Product Positioning & Value Proposition
+## 1️⃣ Product Identity (Locked)
+*   **Identity:** "Sales Timing Signal for B2B Teams"
+*   **Rejected Terms:** "email analytics tool", "open rate tracker"
+*   **Core Philosophy:** "Signal without action is noise."
 
-### The Shift
-*   **From:** "Invisible pixel tracking and analytics tool"
-*   **To:** "Sales timing signal for closing deals"
-
-### Primary Value Proposition
-"Stop chasing cold leads—MailTracker tells you exactly when to call by turning invisible email opens into real-time buying signals."
-
-### Core Narrative
-Sales teams lose money by calling the wrong leads at the wrong time. MailTracker eliminates the guesswork. We don't just "count opens"; we provide a high-fidelity **Sales Action Signal**. When a prospect opens your proposal for the 3rd time on a mobile device, that's not a statistic—that's a scream to pick up the phone.
+## 2️⃣ The One-Liner
+> **"MailTracker turns email opens into high-fidelity sales signals so you know exactly when to pick up the phone."**
 
 ---
 
-## 2️⃣ ICP Refocusing (Go-To-Market)
+## 3️⃣ Action Layer v1.1 (Turn Signal Into Action)
+We are moving beyond passive dashboards. The system must push data to where sales teams live.
 
-### Primary ICP (First 6 Months)
-**Target:** High-Velocity B2B Sales Teams & Agencies
-*   **Roles:** SDRs, Account Executives, Agency Owners.
-*   **Pain Point:** "I send 50 emails a day and don't know who is actually interested."
-*   **Goal:** Increase connection rates and shorten sales cycles.
-
-### Secondary ICP (Later)
-**Target:** Growth & Marketing Teams
-*   **Roles:** Growth Hackers, Newsletter Writers.
-*   **Use Case:** A/B testing subject lines, list hygiene.
-
----
-
-## 3️⃣ Feature → Business Value Translation
-
-| Feature | Old "Tech" Speak | New "Money" Speak |
-| :--- | :--- | :--- |
-| **Invisible Pixel** | "1x1 GIF tracking" | **Buying Signal Trigger**: Know the exact moment interest sparks. |
-| **Real-time Dashboard** | "Live stats view" | **Call Timing Advantage**: Call while they are still reading. |
-| **Proxy Detection** | "Detects Gmail/Apple proxies" | **Anti-Vanity Metrics**: Stop getting excited by fake bot opens. |
-| **Deduplication** | "Unique IP hashing" | **True Interest Gauge**: Distinguish one obsessor from 10 bots. |
-| **Privacy Controls** | "GDPR compliant hashing" | **Legal-Free Adoption**: Safe to use without a 3-month compliance audit. |
-
-**Sales Use-Case Scenario:**
-*   *Before:* SDR calls a lead 2 days after sending a proposal. Lead has forgotten them.
-*   *After:* SDR sees "Proposal.pdf" opened 3 times in 5 minutes via MailTracker. SDR calls *now*. "Hey, I was just thinking about your proposal..." -> **Deal Closed.**
+### Webhook System (`sales_signal_detected`)
+*   **Trigger:** Fires when a unique, non-proxy open is detected and deduplicated.
+*   **Payload:**
+    ```json
+    {
+      "event": "sales_signal_detected",
+      "campaign_id": "cmp_12345",
+      "campaign_name": "Q3 Proposal - Acme Corp",
+      "confidence_score": "high",
+      "is_proxy": false,
+      "occurred_at": "2026-01-18T14:30:00Z",
+      "signal_strength": {
+        "open_count": 3,
+        "velocity": "2_opens_in_5_mins"
+      }
+    }
+    ```
+*   **Goal:** Enable direct integration with Slack, Discord, or Zapier.
 
 ---
 
-## 4️⃣ Competitive Differentiation
+## 4️⃣ Pricing & Technical Limits
+Pricing protects signal quality by preventing spam. We sell "Signal Capacity", not "Email Volume".
 
-**The One-Liner:**
-> "Unlike Streak or HubSpot who count every bot as a lead, MailTracker filters out the noise to give you the one true signal that actually matters makes you money."
+### Seat-Based Limits (Enforced via Middleware)
+1.  **Events per Seat:** 1,000 tracked events / day.
+    *   *Why?* A human SDR cannot handle more than 50 "hot" signals a day. Higher volume implies mass marketing (spam), which kills domain reputation.
+2.  **Campaigns per Seat:** 50 active campaigns.
+    *   *Why?* Forces focus on high-value deals.
+3.  **Rate Limits:** 60 requests/minute per seat.
+    *   *Soft Throttling:* If exceeded, return 429 but queue the signal if possible (Action Layer v1.2 consideration). For now, strict 429.
 
----
-
-## 5️⃣ Technical Signal Depth & Logic
-
-### Signal Quality vs. Noise
-*   **Gmail Image Proxy:** Detected via User-Agent (`GoogleImageProxy`). We flag these as "Proxy Opens" but count them as a valid *initial* delivery signal.
-*   **Apple Mail Privacy Protection (MPP):** Detected via heuristics (Generic User-Agents + aggressively pre-fetched images). We mark these as `is_proxy=true` to prevent false "active interest" signals.
-*   **The "Unique" Definition:** A unique open is defined by a unique combination of `Campaign ID + IP Hash + User-Agent Hash` within a 60-minute window. This prevents a single user (or bot) refreshing the page from inflating stats.
-
-### Trade-offs
-*   **Privacy vs. Geolocation:** We prioritize Privacy. We do not store raw IPs by default, which means we sacrifice precise "City/Country" maps for "GDPR-safe" compliance. This is a selling point, not a bug.
+> **"High volume destroys signal. We limit volume to guarantee validity."**
 
 ---
 
-## 6️⃣ Action Integration & Roadmap
+## 5️⃣ Signal Logic (No Ambiguity)
+Precision is our product. We do not count noise.
 
-### Current Capabilities
-*   **Passive:** Web Dashboard.
-
-### Near-Term Roadmap (Action-First)
-1.  **Webhooks (v1.1):** Push JSON payload to URL on `event_created`.
-    *   *Value:* Let engineers build their own alerts.
-2.  **Slack/Discord Notifications (v1.2):** "🔔 **Hot Lead:** 'Acme Corp Proposal' just opened!"
-    *   *Value:* Instant team mobilization.
-3.  **CRM Push (v2.0):** Native HubSpot/Pipedrive integration.
-    *   *Value:* Auto-log activity to deal timeline.
-
----
-
-## 7️⃣ Scale, Abuse & Safety
-
-### Protect Validity
-*   **Throttling:** 60 requests per minute per campaign key. Prevents "Pixel bombing" attacks.
-*   **Deduplication:** Aggressive caching (Redis/Database) prevents DB writes for duplicate signals.
-
-### Infrastructure Safety
-*   **Hashed Keys:** Keys are hashed in DB. Even if DB is leaked, campaign write-access is safe.
-*   **Queueing:** All event processing is asynchronous. Burst traffic goes to Queue, not DB.
+### Logic Rules
+1.  **Multi-Device Handling:**
+    *   If `User-Agent` changes (Mobile -> Desktop) within 60 mins -> **Strong Signal** (Flag as "Device Switch").
+2.  **Proxy vs. MPP:**
+    *   `GoogleImageProxy`: Count as **Weak Signal** (Delivery confirmed, no intent).
+    *   `Apple MPP`: Flag as `is_proxy=true`. Do NOT trigger "Hot Lead" alerts unless confirmed by a subsequent non-proxy interaction (e.g., click).
+3.  **Unique Open Definition:**
+    *   A "Unique Open" is a specific IP + UA hash combination.
+    *   **Window:** We deduplicate clicks from the same source for **60 minutes**.
+    *   *Effect:* 10 refreshes in 1 minute = 1 Signal. 2 opens 3 hours apart = 2 Signals.
 
 ---
 
-## 8️⃣ Pricing Model Analysis
+## 6️⃣ Privacy Tone (Safe & Confident)
+We do not use "hacks". We use "Privacy by Design".
 
-### A. Event-Based (e.g., $10/10k opens)
-*   *Pros:* Scales with value.
-*   *Cons:* Unpredictable bills. Punishes "viral" success.
-*   *Verdict:* **Avoid.**
-
-### B. Campaign-Based (e.g., $15/20 active campaigns)
-*   *Pros:* Easy to understand.
-*   *Cons:* Limits usage. Users might delete history to save money.
-*   *Verdict:* **Neutral.**
-
-### C. Seat/Team Based (e.g., $29/user/month - Unlimited) -> **RECOMMENDED**
-*   *Pros:* Predictable SaaS revenue. Aligns with Sales Team budgets.
-*   *Cons:* Need to prevent account sharing.
-*   *Abuse Controls:* Hard limit on "opens per minute" to prevent using a personal seat for a transactional email blast.
+*   **Bad:** "We bypass GDPR restrictions."
+*   **Good:** "Built to reduce compliance friction, not bypass it."
+*   **Stance:**
+    *   **Default-Safe:** PII (IPs) are hashed or discarded by default.
+    *   **Minimal Data:** We only store what is needed to confirm "Interest".
+    *   **Configurable:** Enterprise clients can enable fuller logging if they own the liability.
 
 ---
 
-## 9️⃣ Privacy & Compliance
-
-**New Stance:** "Default Safe."
-*   "You don't need a lawyer to use MailTracker."
-*   We use **k-Anonymity** principles. We don't track *who* (PII), we track *behavior* (Signals).
-*   Data Retention: Auto-pruning of raw logs available.
+## 7️⃣ Real Sales Scenario
+1.  **Proposal Sent:** SDR sends "Enterprise_Plan_v3.pdf" to Champion at 10:00 AM.
+2.  **Signal Detected:** 10:05 AM -> "Active Read" detected (non-proxy, desktop UA).
+3.  **Sales Notified:** Slack bot pings SDR: "🔥 Champion is reading Enterprise_Plan_v3 right now."
+4.  **Call Made:** SDR calls at 10:06 AM. "Hey, I was just reviewing your file..."
+5.  **Outcome:** Objection handled immediately. **Deal moved to Contract.**
 
 ---
 
-## 🔟 Summary & Next Steps
-This document serves as the "North Star" for the next sprint. We will immediately begin refactoring the README and Landing Page copy to reflect this new "Sales Signal" reality.
+## 8️⃣ Scale-Ready Roadmap (Locked)
+
+### v1.1 Webhooks (Current Focus)
+*   **Action:** Send JSON payload to user-defined URL.
+*   **Value:** "Build your own alerts."
+*   **Complexity:** Low.
+
+### v1.2 Slack / Discord
+*   **Action:** Native OAuth integration.
+*   **Value:** "Zero-setup team notifications."
+*   **Complexity:** Medium.
+
+### v2.0 CRM Push
+*   **Action:** Sync "Last Active" date to HubSpot Deal.
+*   **Value:** "Automated pipeline hygiene."
+*   **Complexity:** High.
