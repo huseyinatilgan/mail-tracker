@@ -19,9 +19,11 @@ class CampaignFactory extends Factory
      */
     public function definition(): array
     {
+        $key = Str::random(20);
         return [
             'name' => fake()->words(3, true) . ' Campaign',
-            'key' => Str::random(20),
+            'key_hash' => hash('sha256', $key),
+            'encrypted_key' => \Illuminate\Support\Facades\Crypt::encryptString($key),
             'user_id' => User::factory(),
         ];
     }

@@ -14,6 +14,10 @@ class Event extends Model
         'ip_address',
         'user_email',
         'opened_at',
+        'ip_hash',
+        'ua_hash',
+        'is_proxy',
+        'proxy_type',
     ];
 
     /**

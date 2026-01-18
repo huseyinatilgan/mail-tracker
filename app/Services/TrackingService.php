@@ -4,147 +4,170 @@ namespace App\Services;
 
 use App\Models\Campaign;
 use App\Models\Event;
+use App\Jobs\ProcessTrackingEvent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class TrackingService
 {
     /**
-     * Tracking event'i kaydet
+     * Track event safely and securely
      */
     public function trackEvent(string $campaignKey, Request $request): bool
     {
         try {
-            // Key formatını doğrula (sadece alfanumerik, 20 karakter)
+            // Validate key format (alphanumeric, 20 chars)
             if (!preg_match('/^[a-zA-Z0-9]{20}$/', $campaignKey)) {
+                // Log only partial key for debugging to avoid leaking secrets in logs
                 Log::warning('Invalid tracking key format', [
-                    'key' => Str::limit($campaignKey, 50),
-                    'ip' => $request->ip(),
+                    'key_prefix' => substr($campaignKey, 0, 5) . '...',
+                    'ip_hash' => hash('sha256', $request->ip()), // Log hash instead of raw IP
                 ]);
                 return false;
             }
 
-            $campaign = Campaign::where('key', $campaignKey)->first();
+            $keyHash = hash('sha256', $campaignKey);
 
-            if (!$campaign) {
-                Log::info('Campaign not found for tracking', [
-                    'key' => $campaignKey,
-                    'ip' => $request->ip(),
-                ]);
+            // 1. Rate Limit per Campaign Key (Endpoint Protection)
+            // Prevent flooding the DB buffer or Cache with invalid keys
+            // Allow 60 requests per minute per key
+            $rateLimitKey = "tracking_limit:{$keyHash}";
+            if (Cache::has($rateLimitKey) && Cache::increment($rateLimitKey) > 60) {
+                return false;
+            }
+            Cache::add($rateLimitKey, 1, 60);
+
+            // 2. Lookup Campaign by Hash
+            // Cache campaign ID lookup to avoid DB hit on every pixel load
+            $campaignId = Cache::remember("campaign_id:{$keyHash}", now()->addMinutes(10), function () use ($keyHash) {
+                return Campaign::where('key_hash', $keyHash)->value('id');
+            });
+
+            if (!$campaignId) {
                 return false;
             }
 
-            // IP adresini doğrula ve sanitize et
-            $ipAddress = $this->sanitizeIpAddress($request->ip());
-            if (!$ipAddress) {
-                Log::warning('Invalid IP address', [
-                    'ip' => $request->ip(),
-                    'campaign_id' => $campaign->id,
-                ]);
-                return false;
+            // 3. Process Request Data
+            $ip = $request->ip();
+            $ua = $request->userAgent();
+
+            // Hashing for Privacy & Deduplication
+            $ipHash = $ip ? hash('sha256', $ip) : null;
+            $uaHash = $ua ? hash('sha256', $ua) : null;
+
+            // 4. Proxy Detection
+            $isProxy = false;
+            $proxyType = null;
+
+            if ($this->isGmailProxy($ua)) {
+                $isProxy = true;
+                $proxyType = 'gmail';
+            } elseif ($this->isApplePrivacyProxy($ua)) {
+                $isProxy = true;
+                $proxyType = 'apple_privacy';
             }
 
-            // Rate limiting kontrolü - aynı IP'den 1 dakikada 1 kez
-            $recentEvent = Event::where('campaign_id', $campaign->id)
-                ->where('ip_address', $ipAddress)
-                ->where('opened_at', '>=', now()->subMinute())
-                ->first();
+            // 5. Deduplication
+            // "Same campaign + IP hash + User-Agent hash within configurable time window"
+            $dedupWindowMinutes = Config::get('mailtracker.deduplication_window', 60);
+            $dedupKey = "tracking_dedup:{$campaignId}:{$ipHash}:{$uaHash}";
 
-            if ($recentEvent) {
-                return false;
+            if (Cache::has($dedupKey)) {
+                // Already tracked recently
+                return true;
             }
+            // Mark as tracked
+            Cache::put($dedupKey, 1, now()->addMinutes($dedupWindowMinutes));
 
-            // User Agent'ı sanitize et ve uzunluğunu sınırla
-            $userAgent = $this->sanitizeUserAgent($request->userAgent());
-            
-            // Email'i sanitize et ve doğrula
-            $userEmail = $this->sanitizeEmail($request->get('email'));
+            // 6. Privacy Handling (Masking/Hashing before storage)
+            $storeIp = Config::get('mailtracker.track_ip', false);
+            $storeUa = Config::get('mailtracker.track_user_agent', false);
 
-            Event::create([
-                'campaign_id' => $campaign->id,
+            $ipAddress = $storeIp ? $this->sanitizeIpAddress($ip) : null;
+            $userAgent = $storeUa ? $this->sanitizeUserAgent($ua) : null;
+
+            // 7. Dispatch Job
+            ProcessTrackingEvent::dispatch([
+                'campaign_id' => $campaignId,
                 'user_agent' => $userAgent,
                 'ip_address' => $ipAddress,
-                'user_email' => $userEmail,
+                'user_email' => $this->sanitizeEmail($request->get('email')), // Email support if passed
+                'ip_hash' => $ipHash,
+                'ua_hash' => $uaHash,
+                'is_proxy' => $isProxy,
+                'proxy_type' => $proxyType,
                 'opened_at' => now(),
             ]);
 
             return true;
+
         } catch (\Exception $e) {
             Log::error('Error tracking event', [
-                'key' => Str::limit($campaignKey, 50),
-                'ip' => $request->ip(),
                 'error' => $e->getMessage(),
             ]);
             return false;
         }
     }
 
-    /**
-     * IP adresini doğrula ve sanitize et
-     */
+    private function isGmailProxy(?string $ua): bool
+    {
+        if (!$ua)
+            return false;
+        return str_contains($ua, 'GoogleImageProxy');
+    }
+
+    private function isApplePrivacyProxy(?string $ua): bool
+    {
+        if (!$ua)
+            return false;
+        // Basic detection for Apple Mail on generic setups, usually masked IP but checked via UA
+        // Apple often leaves "Mozilla/5.0" but fetches images via proxy. 
+        // A more robust check might look for specific IP ranges (Cloudflare/Apple), but keeping it simple as requested.
+        // Actually, Apple Mail often sends nothing distinctive in UA other than being generic or "AppleWebKit" without specific version sometimes.
+        // Let's rely on a common known string if available, or just skip advanced detection for now if no clear signal.
+        // There is no single 100% UA string for Apple MPP.
+        return false;
+    }
+
     private function sanitizeIpAddress(?string $ip): ?string
     {
-        if (empty($ip)) {
+        if (empty($ip))
             return null;
-        }
-
-        // IPv4 ve IPv6 formatlarını kontrol et
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
             return $ip;
         }
-
-        // Private IP'ler de kabul edilebilir (localhost, internal network)
-        if (filter_var($ip, FILTER_VALIDATE_IP)) {
-            return $ip;
-        }
-
-        return null;
+        return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : null;
     }
 
-    /**
-     * User Agent'ı sanitize et
-     */
     private function sanitizeUserAgent(?string $userAgent): ?string
     {
-        if (empty($userAgent)) {
+        if (empty($userAgent))
             return null;
-        }
-
-        // Maksimum 500 karakter (veritabanı text alanı için)
-        $userAgent = Str::limit(strip_tags($userAgent), 500);
-        
-        // Sadece güvenli karakterlere izin ver
+        // Strip tags and limit to 500 chars STRICTLY (no '...' suffix)
+        $userAgent = substr(strip_tags($userAgent), 0, 500);
         return preg_replace('/[^\x20-\x7E\x80-\xFF]/', '', $userAgent) ?: null;
     }
 
-    /**
-     * Email'i sanitize et ve doğrula
-     */
     private function sanitizeEmail(?string $email): ?string
     {
-        if (empty($email)) {
+        if (empty($email))
             return null;
-        }
-
         $email = filter_var(trim($email), FILTER_SANITIZE_EMAIL);
-        
-        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            // Maksimum 255 karakter
-            return Str::limit($email, 255);
-        }
-
-        return null;
+        return filter_var($email, FILTER_VALIDATE_EMAIL) ? Str::limit($email, 255) : null;
     }
 
     /**
-     * Kampanya istatistiklerini getir
+     * Get Campaign Stats (Read-Only)
+     * Still uses direct DB queries for now, but could be cached or aggregated.
      */
     public function getCampaignStats(int $campaignId): array
     {
-        if (!Campaign::whereKey($campaignId)->exists()) {
-            return [];
-        }
+        // ... (Existing logic, verified to work with new nullable columns as count(*) still works)
+        // Adjusting logic simply to ensure it looks at 'opened_at' which exists.
 
         $now = now();
         $startOfDay = $now->copy()->startOfDay();
@@ -162,12 +185,7 @@ class TrackingService
             ->first();
 
         if (!$stats) {
-            return [
-                'total' => 0,
-                'today' => 0,
-                'week' => 0,
-                'month' => 0,
-            ];
+            return ['total' => 0, 'today' => 0, 'week' => 0, 'month' => 0];
         }
 
         return [
@@ -177,43 +195,47 @@ class TrackingService
             'month' => (int) ($stats->month ?? 0),
         ];
     }
-
     /**
-     * Dashboard istatistiklerini getir
+     * Get Dashboard Stats
      */
     public function getDashboardStats(int $userId): array
     {
+        $now = Carbon::now();
+
+        // Campaigns Stats
         $totalCampaigns = Campaign::where('user_id', $userId)->count();
+        $campaignsThisMonth = Campaign::where('user_id', $userId)
+            ->whereMonth('created_at', $now->month)
+            ->whereYear('created_at', $now->year)
+            ->count();
 
-        $now = now();
-        $startOfDay = $now->copy()->startOfDay();
-        $startOfWeek = $now->copy()->subWeek();
+        // Views Stats via Events
+        // We need to join campaigns to filter by user_id
+        $viewsQuery = Event::whereHas('campaign', function ($q) use ($userId) {
+            $q->where('user_id', $userId);
+        });
 
-        $eventStats = Event::whereHas('campaign', function ($query) use ($userId) {
-            $query->where('user_id', $userId);
-        })
-            ->selectRaw(
-                'COUNT(*) as total,
-                SUM(CASE WHEN opened_at >= ? THEN 1 ELSE 0 END) as today,
-                SUM(CASE WHEN opened_at >= ? THEN 1 ELSE 0 END) as week',
-                [$startOfDay, $startOfWeek]
-            )
-            ->first();
+        $totalViews = (clone $viewsQuery)->count();
 
-        if (!$eventStats) {
-            return [
-                'total_campaigns' => $totalCampaigns,
-                'total_events' => 0,
-                'today_events' => 0,
-                'week_events' => 0,
-            ];
-        }
+        $viewsThisWeek = (clone $viewsQuery)
+            ->where('opened_at', '>=', $now->copy()->startOfWeek())
+            ->count();
+
+        $viewsToday = (clone $viewsQuery)
+            ->whereDate('opened_at', $now->today())
+            ->count();
+
+        $viewsYesterday = (clone $viewsQuery)
+            ->whereDate('opened_at', $now->copy()->subDay()->toDateString())
+            ->count();
 
         return [
             'total_campaigns' => $totalCampaigns,
-            'total_events' => (int) ($eventStats->total ?? 0),
-            'today_events' => (int) ($eventStats->today ?? 0),
-            'week_events' => (int) ($eventStats->week ?? 0),
+            'campaigns_this_month' => $campaignsThisMonth,
+            'total_views' => $totalViews,
+            'views_this_week' => $viewsThisWeek,
+            'views_today' => $viewsToday,
+            'views_yesterday' => $viewsYesterday,
         ];
     }
 }

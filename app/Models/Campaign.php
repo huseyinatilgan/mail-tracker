@@ -10,7 +10,9 @@ class Campaign extends Model
     use HasFactory;
     protected $fillable = [
         'name',
-        'key',
+        // 'key', // Plaintext key removed
+        'key_hash',
+        'encrypted_key',
         'user_id',
     ];
 
@@ -36,5 +38,20 @@ class Campaign extends Model
     public function events()
     {
         return $this->hasMany(Event::class);
+    }
+
+    /**
+     * Get decrypted key attribute
+     */
+    public function getKeyAttribute()
+    {
+        if (isset($this->attributes['encrypted_key'])) {
+            try {
+                return \Illuminate\Support\Facades\Crypt::decryptString($this->attributes['encrypted_key']);
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+        return null;
     }
 }
