@@ -1,172 +1,133 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center">
-                    <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
-                        <i class="fas fa-plus text-white text-lg"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Yeni Kampanya Oluştur</h1>
-                        <p class="text-sm text-gray-600">E-posta kampanyanızı oluşturun ve takip etmeye başlayın</p>
-                    </div>
+            <div class="flex items-center gap-4">
+                <div
+                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-primary-500/30">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="font-display font-bold text-2xl text-slate-900">New Campaign</h2>
+                    <p class="text-sm text-slate-500">Create a tracking campaign and get your invisible pixel</p>
                 </div>
             </div>
-            <a href="{{ route('campaigns.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2.5 rounded-lg transition-all duration-300 font-medium">
-                <i class="fas fa-arrow-left mr-2"></i>
-                Geri Dön
+            <a href="{{ route('campaigns.index') }}"
+                class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:border-slate-300 transition-colors shadow-sm">
+                ← Back to Campaigns
             </a>
         </div>
     </x-slot>
 
-    <div class="py-8 bg-gradient-to-br from-gray-50 to-indigo-50 min-h-screen">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            <!-- Ana Form -->
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8">
-                <div class="px-6 py-4 border-b border-gray-100">
-                    <h3 class="text-xl font-bold text-gray-900">
-                        <i class="fas fa-bullhorn mr-2 text-indigo-600"></i>
-                        Kampanya Bilgileri
-                    </h3>
-                </div>
-                
-                <div class="p-6">
-                    <form action="{{ route('campaigns.store') }}" method="POST">
-                        @csrf
-                        
-                        <div class="mb-6">
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-tag mr-1 text-indigo-600"></i>
-                                Kampanya Adı <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('name') border-red-500 @enderror" 
-                                   id="name" 
-                                   name="name" 
-                                   value="{{ old('name') }}" 
-                                   placeholder="Örn: Yaz Kampanyası 2024"
-                                   required>
-                            @error('name')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                            <p class="mt-2 text-sm text-gray-600">
-                                Kampanyanızı tanımlayacak açıklayıcı bir isim verin.
-                            </p>
-                        </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Form -->
+        <div class="lg:col-span-2 space-y-8">
+            <div class="glass-card p-8">
+                <form action="{{ route('campaigns.store') }}" method="POST" class="space-y-6">
+                    @csrf
 
-                        <!-- Bilgi Kutusu -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                            <div class="flex items-start">
-                                <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                                    <i class="fas fa-info-circle text-blue-600 text-sm"></i>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-semibold text-blue-900 mb-1">
-                                        Tracking Key Otomatik Oluşturulacak
-                                    </h4>
-                                    <p class="text-sm text-blue-800">
-                                        Kampanya oluşturulduktan sonra size benzersiz bir tracking key verilecek. 
-                                        Bu key'i e-postalarınıza ekleyerek okunma durumunu takip edebilirsiniz.
-                                    </p>
-                                </div>
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-slate-700 mb-2">Campaign Name</label>
+                        <div class="relative">
+                            <input type="text" id="name" name="name" value="{{ old('name') }}"
+                                placeholder="e.g. Summer Sale 2026 Newsletter" required
+                                class="block w-full px-4 py-3 rounded-xl border-slate-200 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-primary-500 focus:ring-primary-500 transition-all shadow-sm">
+                            <div
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
                             </div>
                         </div>
+                        <p class="mt-2 text-sm text-slate-500">Give your campaign a descriptive name to identify it
+                            easily in reports.</p>
+                        @error('name')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                        <!-- Butonlar -->
-                        <div class="flex items-center justify-end space-x-4">
-                            <a href="{{ route('campaigns.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg transition-all duration-300 font-medium">
-                                <i class="fas fa-times mr-2"></i>
-                                İptal
-                            </a>
-                            <button type="submit" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg font-medium">
-                                <i class="fas fa-save mr-2"></i>
-                                Kampanya Oluştur
-                            </button>
+                    <div class="bg-primary-50/50 rounded-xl p-4 border border-primary-100 flex items-start gap-4">
+                        <div class="flex-shrink-0">
+                            <svg class="h-6 w-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
                         </div>
-                    </form>
+                        <div>
+                            <h4 class="text-sm font-medium text-primary-900">Automatic Key Generation</h4>
+                            <p class="mt-1 text-sm text-primary-700 leading-relaxed">
+                                Once you create the campaign, we'll generate a unique 20-character tracking key for you.
+                                You'll need this key to embed the tracking pixel.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex items-center gap-4">
+                        <button type="submit"
+                            class="px-6 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 text-white font-bold text-sm shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all duration-200">
+                            Create Campaign
+                        </button>
+                        <a href="{{ route('campaigns.index') }}"
+                            class="px-6 py-3 rounded-xl text-slate-600 font-medium hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar / Guide -->
+        <div class="space-y-6">
+            <h3 class="font-display font-semibold text-lg text-slate-800">Quick Guide</h3>
+
+            <!-- Step 1 -->
+            <div class="glass-card p-5 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-16 h-16 bg-primary-100 rounded-bl-full -mr-8 -mt-8 opacity-50">
+                </div>
+                <div class="flex gap-4">
+                    <div
+                        class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-bold text-sm">
+                        1</div>
+                    <div>
+                        <h4 class="font-medium text-slate-900">Create Campaign</h4>
+                        <p class="text-sm text-slate-500 mt-1">Fill out the form to register your new email campaign.
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Kullanım Rehberi -->
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100">
-                    <h3 class="text-xl font-bold text-gray-900">
-                        <i class="fas fa-question-circle mr-2 text-indigo-600"></i>
-                        Nasıl Kullanılır?
-                    </h3>
-                </div>
-                
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6">
-                            <div class="flex items-center mb-4">
-                                <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
-                                    <span class="text-white font-bold text-sm">1</span>
-                                </div>
-                                <h4 class="text-lg font-semibold text-gray-900">Kampanya Oluşturun</h4>
-                            </div>
-                            <p class="text-gray-600">Yukarıdaki formu doldurarak kampanyanızı oluşturun.</p>
-                        </div>
-                        
-                        <div class="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-6">
-                            <div class="flex items-center mb-4">
-                                <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center mr-3">
-                                    <span class="text-white font-bold text-sm">2</span>
-                                </div>
-                                <h4 class="text-lg font-semibold text-gray-900">Tracking Key'i Alın</h4>
-                            </div>
-                            <p class="text-gray-600">Kampanya oluşturulduktan sonra size benzersiz bir key verilecek.</p>
-                        </div>
-                        
-                        <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6">
-                            <div class="flex items-center mb-4">
-                                <div class="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center mr-3">
-                                    <span class="text-white font-bold text-sm">3</span>
-                                </div>
-                                <h4 class="text-lg font-semibold text-gray-900">E-postaya Ekleyin</h4>
-                            </div>
-                            <p class="text-gray-600 mb-3">Bu key'i e-postalarınıza şu şekilde ekleyin:</p>
-                            <code class="bg-gray-100 text-gray-800 px-3 py-2 rounded text-sm font-mono block">
-                                &lt;img src="{{ url('/track/YOUR_KEY') }}" width="1" height="1"&gt;
-                            </code>
-                        </div>
-                        
-                        <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6">
-                            <div class="flex items-center mb-4">
-                                <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mr-3">
-                                    <span class="text-white font-bold text-sm">4</span>
-                                </div>
-                                <h4 class="text-lg font-semibold text-gray-900">Takip Edin</h4>
-                            </div>
-                            <p class="text-gray-600">E-posta açıldığında otomatik olarak okunma kaydı oluşacak.</p>
-                        </div>
+            <!-- Step 2 -->
+            <div class="glass-card p-5 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-16 h-16 bg-cyan-100 rounded-bl-full -mr-8 -mt-8 opacity-50"></div>
+                <div class="flex gap-4">
+                    <div
+                        class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center font-bold text-sm">
+                        2</div>
+                    <div>
+                        <h4 class="font-medium text-slate-900">Get Tracking Key</h4>
+                        <p class="text-sm text-slate-500 mt-1">Copy the unique ID generated for your campaign.</p>
                     </div>
-                    
-                    <!-- Örnek Kullanım -->
-                    <div class="mt-8 bg-gray-50 rounded-xl p-6">
-                        <h4 class="text-lg font-semibold text-gray-900 mb-4">
-                            <i class="fas fa-code mr-2 text-indigo-600"></i>
-                            Örnek E-posta HTML Kodu
-                        </h4>
-                        <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-                            <pre class="text-green-400 text-sm"><code>&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-    &lt;title&gt;Kampanya E-postası&lt;/title&gt;
-&lt;/head&gt;
-&lt;body&gt;
-    &lt;h1&gt;Merhaba!&lt;/h1&gt;
-    &lt;p&gt;Bu e-posta kampanyamızı takip ediyoruz.&lt;/p&gt;
-    
-    &lt;!-- Tracking pixel - görünmez olmalı --&gt;
-    &lt;img src="{{ url('/track/YOUR_KEY') }}" width="1" height="1" style="display:none;"&gt;
-&lt;/body&gt;
-&lt;/html&gt;</code></pre>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="glass-card p-5 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-16 h-16 bg-pink-100 rounded-bl-full -mr-8 -mt-8 opacity-50"></div>
+                <div class="flex gap-4">
+                    <div
+                        class="flex-shrink-0 w-8 h-8 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center font-bold text-sm">
+                        3</div>
+                    <div>
+                        <h4 class="font-medium text-slate-900">Embed Pixel</h4>
+                        <p class="text-sm text-slate-500 mt-1">Add the HTML code to your email template.</p>
+                        <div class="mt-3 bg-slate-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-xs text-pink-400 font-mono">&lt;img src="..."&gt;</code>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout> 
+</x-app-layout>

@@ -81,3 +81,5 @@ Eğer MySQL farklı bir port kullanıyorsa (örneğin 3307), `.env` dosyasını 
 DB_PORT=3307
 ```
 
+
+

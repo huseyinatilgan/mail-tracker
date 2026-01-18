@@ -1,71 +1,78 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                <i class="fas fa-edit me-2"></i>
-                {{ __('Kampanya Düzenle') }}: {{ $campaign->name }}
-            </h2>
+        <div class="flex items-center justify-between" style="flex-wrap: wrap; gap: var(--spacing-md);">
+            <div class="page-header-title">
+                <div class="page-header-icon">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <div class="page-header-text">
+                    <h1>{{ __('Kampanya Düzenle') }}: {{ $campaign->name }}</h1>
+                    <p>Kampanya bilgilerini güncelleyin</p>
+                </div>
+            </div>
             <a href="{{ route('campaigns.show', $campaign) }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-2"></i>
+                <i class="fas fa-arrow-left"></i>
                 Geri Dön
             </a>
         </div>
     </x-slot>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-bullhorn me-2"></i>
+    <div class="main-content">
+        <div class="main-container" style="max-width: 1024px;">
+            <div class="card" style="margin-bottom: var(--spacing-xl);">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-bullhorn" style="color: var(--color-primary);"></i>
                         Kampanya Bilgileri
-                    </h6>
+                    </h3>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('campaigns.update', $campaign) }}" method="POST">
                         @csrf
                         @method('PUT')
                         
-                        <div class="mb-3">
-                            <label for="name" class="form-label">
-                                <i class="fas fa-tag me-1"></i>
-                                Kampanya Adı <span class="text-danger">*</span>
+                        <div class="form-group">
+                            <label for="name" class="form-label required">
+                                <i class="fas fa-tag" style="color: var(--color-primary); margin-right: var(--spacing-xs);"></i>
+                                Kampanya Adı
                             </label>
                             <input type="text" 
-                                   class="form-control @error('name') is-invalid @enderror" 
+                                   class="form-input @error('name') error @enderror" 
                                    id="name" 
                                    name="name" 
                                    value="{{ old('name', $campaign->name) }}" 
                                    placeholder="Örn: Yaz Kampanyası 2024"
                                    required>
                             @error('name')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
+                                <p class="form-error">{{ $message }}</p>
                             @enderror
-                            <div class="form-text">
+                            <p class="form-help">
                                 Kampanyanızı tanımlayacak açıklayıcı bir isim verin.
-                            </div>
-                        </div>
-
-                        <div class="alert alert-info">
-                            <h6 class="alert-heading">
-                                <i class="fas fa-info-circle me-2"></i>
-                                Tracking Key Değiştirilemez
-                            </h6>
-                            <p class="mb-0">
-                                Mevcut tracking key: <code>{{ $campaign->key }}</code><br>
-                                Bu key değiştirilemez çünkü e-postalarınızda kullanılıyor olabilir.
                             </p>
                         </div>
 
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{{ route('campaigns.show', $campaign) }}" class="btn btn-secondary me-md-2">
-                                <i class="fas fa-times me-2"></i>
+                        <div class="info-box">
+                            <div class="info-box-content">
+                                <div class="info-box-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div class="info-box-text">
+                                    <h4>Tracking Key Değiştirilemez</h4>
+                                    <p>
+                                        Mevcut tracking key: <code class="code">{{ $campaign->key }}</code><br>
+                                        Bu key değiştirilemez çünkü e-postalarınızda kullanılıyor olabilir.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between" style="margin-top: var(--spacing-xl);">
+                            <a href="{{ route('campaigns.show', $campaign) }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i>
                                 İptal
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>
+                                <i class="fas fa-save"></i>
                                 Güncelle
                             </button>
                         </div>
@@ -74,34 +81,46 @@
             </div>
 
             <!-- Kampanya İstatistikleri -->
-            <div class="card shadow mt-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-chart-bar me-2"></i>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-bar" style="color: var(--color-primary);"></i>
                         Kampanya İstatistikleri
-                    </h6>
+                    </h3>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-calendar me-2"></i>Oluşturulma Tarihi</h6>
-                            <p class="text-muted">{{ $campaign->created_at->format('d.m.Y H:i') }}</p>
+                    <div class="grid grid-cols-1 grid-cols-sm-2" style="gap: var(--spacing-lg);">
+                        <div>
+                            <h4 style="margin: 0; margin-bottom: var(--spacing-sm); font-size: var(--font-size-base); font-weight: 600; color: var(--text-primary);">
+                                <i class="fas fa-calendar" style="color: var(--color-primary); margin-right: var(--spacing-sm);"></i>
+                                Oluşturulma Tarihi
+                            </h4>
+                            <p style="margin: 0; color: var(--text-secondary);">{{ $campaign->created_at->format('d.m.Y H:i') }}</p>
                         </div>
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-clock me-2"></i>Son Güncelleme</h6>
-                            <p class="text-muted">{{ $campaign->updated_at->format('d.m.Y H:i') }}</p>
+                        <div>
+                            <h4 style="margin: 0; margin-bottom: var(--spacing-sm); font-size: var(--font-size-base); font-weight: 600; color: var(--text-primary);">
+                                <i class="fas fa-clock" style="color: var(--color-primary); margin-right: var(--spacing-sm);"></i>
+                                Son Güncelleme
+                            </h4>
+                            <p style="margin: 0; color: var(--text-secondary);">{{ $campaign->updated_at->format('d.m.Y H:i') }}</p>
                         </div>
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-envelope-open me-2"></i>Toplam Okunma</h6>
-                            <p class="text-muted">{{ $campaign->events->count() }} kez</p>
+                        <div>
+                            <h4 style="margin: 0; margin-bottom: var(--spacing-sm); font-size: var(--font-size-base); font-weight: 600; color: var(--text-primary);">
+                                <i class="fas fa-envelope-open" style="color: var(--color-primary); margin-right: var(--spacing-sm);"></i>
+                                Toplam Okunma
+                            </h4>
+                            <p style="margin: 0; color: var(--text-secondary);">{{ $campaign->events->count() }} kez</p>
                         </div>
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-key me-2"></i>Tracking Key</h6>
-                            <p class="text-muted"><code>{{ $campaign->key }}</code></p>
+                        <div>
+                            <h4 style="margin: 0; margin-bottom: var(--spacing-sm); font-size: var(--font-size-base); font-weight: 600; color: var(--text-primary);">
+                                <i class="fas fa-key" style="color: var(--color-primary); margin-right: var(--spacing-sm);"></i>
+                                Tracking Key
+                            </h4>
+                            <p style="margin: 0;"><code class="code">{{ $campaign->key }}</code></p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout> 
+</x-app-layout>

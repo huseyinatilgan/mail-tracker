@@ -106,3 +106,5 @@ php artisan serve --port=8001
 
 Veritabanını oluşturduktan ve migration'ları çalıştırdıktan sonra proje kullanıma hazır olacak!
 
+
+

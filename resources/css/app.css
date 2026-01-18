@@ -1,6 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import 'bootstrap/dist/css/bootstrap.min.css';
-@import '@fortawesome/fontawesome-free/css/all.min.css';
+@layer base {
+    body {
+        @apply font-sans antialiased text-slate-800 bg-slate-50;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-display;
+    }
+}
+
+@layer utilities {
+    .glass {
+        @apply bg-white/70 backdrop-blur-xl border border-white/20;
+    }
+    
+    .glass-card {
+        @apply bg-white/80 backdrop-blur-md shadow-xl ring-1 ring-black/5 rounded-2xl;
+    }
+}

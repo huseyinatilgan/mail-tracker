@@ -189,3 +189,5 @@ composer require --dev roave/security-advisories:dev-latest
 - Güvenlik yamalarını hemen uygulayın
 - `composer audit` ile güvenlik açıklarını kontrol edin
 
+
+

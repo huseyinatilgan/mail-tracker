@@ -1,430 +1,138 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center">
-                    <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
-                        <i class="fas fa-chart-line text-white text-lg"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-                        <p class="text-sm text-gray-600">E-posta kampanyalarınızın performansını takip edin</p>
-                    </div>
-                </div>
-            </div>
-            <div class="flex items-center space-x-4">
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-search text-gray-400"></i>
-                    </div>
-                    <input type="text" placeholder="Kampanya ara..." class="pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-64">
-                </div>
-                <a href="{{ route('campaigns.create') }}" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-2.5 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg font-medium">
-                    <i class="fas fa-plus mr-2"></i>
-                    Yeni Kampanya
-                </a>
+            <h2 class="font-display font-semibold text-3xl text-slate-800 leading-tight">
+                {{ __('Dashboard') }}
+            </h2>
+            <div class="text-sm text-slate-500">
+                Welcome back, {{ Auth::user()->name }}
             </div>
         </div>
     </x-slot>
 
-    <div class="py-8 bg-gradient-to-br from-gray-50 to-indigo-50 min-h-screen">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            <!-- İstatistik Kartları -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- Toplam Kampanya -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-600 mb-1">Toplam Kampanya</p>
-                                <p class="text-3xl font-bold text-gray-900 mb-2">{{ $stats['total_campaigns'] ?? 0 }}</p>
-                                <div class="flex items-center text-sm text-green-600">
-                                    <i class="fas fa-arrow-up mr-1"></i>
-                                    <span>+12%</span>
-                                    <span class="text-gray-500 ml-1">bu ay</span>
-                                </div>
-                            </div>
-                            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg ml-4">
-                                <i class="fas fa-bullhorn text-2xl text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Toplam Okunma -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-600 mb-1">Toplam Okunma</p>
-                                <p class="text-3xl font-bold text-gray-900 mb-2">{{ $stats['total_events'] ?? 0 }}</p>
-                                <div class="flex items-center text-sm text-green-600">
-                                    <i class="fas fa-arrow-up mr-1"></i>
-                                    <span>+8%</span>
-                                    <span class="text-gray-500 ml-1">bu hafta</span>
-                                </div>
-                            </div>
-                            <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg ml-4">
-                                <i class="fas fa-envelope-open text-2xl text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bugünkü Okunma -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-600 mb-1">Bugünkü Okunma</p>
-                                <p class="text-3xl font-bold text-gray-900 mb-2">{{ $stats['today_events'] ?? 0 }}</p>
-                                <div class="flex items-center text-sm text-purple-600">
-                                    <i class="fas fa-arrow-up mr-1"></i>
-                                    <span>+15%</span>
-                                    <span class="text-gray-500 ml-1">dünden</span>
-                                </div>
-                            </div>
-                            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg ml-4">
-                                <i class="fas fa-calendar-day text-2xl text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bu Hafta Okunma -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-600 mb-1">Bu Hafta Okunma</p>
-                                <p class="text-3xl font-bold text-gray-900 mb-2">{{ $stats['week_events'] ?? 0 }}</p>
-                                <div class="flex items-center text-sm text-orange-600">
-                                    <i class="fas fa-arrow-up mr-1"></i>
-                                    <span>+22%</span>
-                                    <span class="text-gray-500 ml-1">geçen haftadan</span>
-                                </div>
-                            </div>
-                            <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg ml-4">
-                                <i class="fas fa-calendar-week text-2xl text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Stats Grid (Bento Style) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Campaigns -->
+        <div class="glass-card p-6 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+            <div
+                class="absolute top-0 right-0 w-32 h-32 bg-primary-100 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-110 transition-transform">
             </div>
-
-            <!-- Ana İçerik Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                <!-- Grafik Alanı -->
-                <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-100">
-                    <div class="px-6 py-4 border-b border-gray-100">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-xl font-bold text-gray-900">Okunma Trendi</h3>
-                            <div class="flex items-center space-x-2">
-                                <select class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                                    <option>Son 7 gün</option>
-                                    <option>Son 30 gün</option>
-                                    <option>Son 3 ay</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <canvas id="readingChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
-
-                <!-- Hızlı İşlemler -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100">
-                    <div class="px-6 py-4 border-b border-gray-100">
-                        <h3 class="text-xl font-bold text-gray-900">Hızlı İşlemler</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        <a href="{{ route('campaigns.create') }}" class="block">
-                            <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
-                                <div class="flex items-center">
-                                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-4">
-                                        <i class="fas fa-plus text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-lg font-semibold">Yeni Kampanya</h4>
-                                        <p class="text-blue-100 text-sm">E-posta kampanyası oluşturun</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-
-                        <a href="{{ route('campaigns.index') }}" class="block">
-                            <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
-                                <div class="flex items-center">
-                                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-4">
-                                        <i class="fas fa-list text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-lg font-semibold">Tüm Kampanyalar</h4>
-                                        <p class="text-green-100 text-sm">Kampanyalarınızı yönetin</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-
-                        <a href="#" class="block">
-                            <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
-                                <div class="flex items-center">
-                                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-4">
-                                        <i class="fas fa-chart-bar text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-lg font-semibold">Detaylı Analitik</h4>
-                                        <p class="text-purple-100 text-sm">Performans raporları</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-
-                        <a href="#" class="block">
-                            <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
-                                <div class="flex items-center">
-                                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-4">
-                                        <i class="fas fa-cog text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-lg font-semibold">Ayarlar</h4>
-                                        <p class="text-orange-100 text-sm">Sistem ayarları</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
+            <dt class="text-sm font-medium text-slate-500 truncate z-10 relative">Total Campaigns</dt>
+            <dd class="mt-2 text-4xl font-bold text-slate-900 z-10 relative">{{ $stats['total_campaigns'] ?? 0 }}</dd>
+            <div class="mt-4 flex items-center text-sm text-green-600 font-medium z-10 relative">
+                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                <span>+{{ $stats['campaigns_this_month'] ?? 0 }} this month</span>
             </div>
+        </div>
 
-            <!-- Alt Bölüm Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Son Kampanyalar -->
-                <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-100">
-                    <div class="px-6 py-4 border-b border-gray-100">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-xl font-bold text-gray-900">Son Kampanyalar</h3>
-                            <a href="{{ route('campaigns.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-                                Tümünü Gör <i class="fas fa-arrow-right ml-1"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        @if(isset($recentCampaigns) && $recentCampaigns->count() > 0)
-                            <div class="space-y-4">
-                                @foreach($recentCampaigns as $campaign)
-                                    <div class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-all duration-300">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center space-x-4">
-                                                <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                                                    <i class="fas fa-envelope text-white"></i>
-                                                </div>
-                                                <div>
-                                                    <h4 class="font-semibold text-gray-900">{{ $campaign->name }}</h4>
-                                                    <p class="text-sm text-gray-600">{{ $campaign->key }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center space-x-6">
-                                                <div class="text-center">
-                                                    <div class="text-2xl font-bold text-gray-900">{{ $campaign->events_count ?? 0 }}</div>
-                                                    <div class="text-xs text-gray-500">okunma</div>
-                                                </div>
-                                                <div class="flex space-x-2">
-                                                    <a href="{{ route('campaigns.show', $campaign) }}" class="w-8 h-8 bg-blue-100 hover:bg-blue-200 rounded-lg flex items-center justify-center transition-colors duration-200">
-                                                        <i class="fas fa-eye text-blue-600 text-sm"></i>
-                                                    </a>
-                                                    <a href="{{ route('campaigns.edit', $campaign) }}" class="w-8 h-8 bg-green-100 hover:bg-green-200 rounded-lg flex items-center justify-center transition-colors duration-200">
-                                                        <i class="fas fa-edit text-green-600 text-sm"></i>
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="mt-3 flex items-center justify-between text-sm text-gray-500">
-                                            <span>Oluşturulma: {{ $campaign->created_at->format('d.m.Y H:i') }}</span>
-                                            <div class="flex items-center space-x-2">
-                                                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                                                <span>Aktif</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center py-12">
-                                <div class="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <i class="fas fa-inbox text-2xl text-indigo-600"></i>
-                                </div>
-                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Henüz kampanya oluşturmadınız</h3>
-                                <p class="text-gray-600 mb-6">İlk e-posta kampanyanızı oluşturarak takip etmeye başlayın.</p>
-                                <a href="{{ route('campaigns.create') }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
-                                    <i class="fas fa-plus mr-2"></i>
-                                    İlk Kampanyanızı Oluşturun
-                                </a>
-                            </div>
-                        @endif
-                    </div>
-                </div>
+        <!-- Emails Sent -->
+        <div class="glass-card p-6 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+            <div
+                class="absolute top-0 right-0 w-32 h-32 bg-cyan-100 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-110 transition-transform">
+            </div>
+            <dt class="text-sm font-medium text-slate-500 truncate z-10 relative">Total Views</dt>
+            <dd class="mt-2 text-4xl font-bold text-slate-900 z-10 relative">{{ $stats['total_views'] ?? 0 }}</dd>
+            <div class="mt-4 flex items-center text-sm text-green-600 font-medium z-10 relative">
+                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                <span>+{{ $stats['views_this_week'] ?? 0 }} this week</span>
+            </div>
+        </div>
 
-                <!-- Son Aktiviteler -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100">
-                    <div class="px-6 py-4 border-b border-gray-100">
-                        <h3 class="text-xl font-bold text-gray-900">Son Aktiviteler</h3>
-                    </div>
-                    <div class="p-6">
-                        <div class="space-y-4">
-                            <div class="flex items-start space-x-3">
-                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                                    <i class="fas fa-envelope-open text-green-600 text-xs"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-900">Yeni e-posta okundu</p>
-                                    <p class="text-xs text-gray-500">2 dakika önce</p>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-start space-x-3">
-                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                                    <i class="fas fa-plus text-blue-600 text-xs"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-900">Yeni kampanya oluşturuldu</p>
-                                    <p class="text-xs text-gray-500">1 saat önce</p>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-start space-x-3">
-                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                                    <i class="fas fa-chart-line text-purple-600 text-xs"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-900">Performans raporu hazırlandı</p>
-                                    <p class="text-xs text-gray-500">3 saat önce</p>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-start space-x-3">
-                                <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                                    <i class="fas fa-edit text-orange-600 text-xs"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-900">Kampanya güncellendi</p>
-                                    <p class="text-xs text-gray-500">5 saat önce</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-6 pt-4 border-t border-gray-100">
-                            <a href="#" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-                                Tüm aktiviteleri gör <i class="fas fa-arrow-right ml-1"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+        <!-- Open Rate -->
+        <div class="glass-card p-6 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+            <div
+                class="absolute top-0 right-0 w-32 h-32 bg-pink-100 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-110 transition-transform">
+            </div>
+            <dt class="text-sm font-medium text-slate-500 truncate z-10 relative">Views Today</dt>
+            <dd class="mt-2 text-4xl font-bold text-slate-900 z-10 relative">{{ $stats['views_today'] ?? 0 }}</dd>
+            <div class="mt-4 flex items-center text-sm text-slate-400 font-medium z-10 relative">
+                <span>{{ $stats['views_yesterday'] ?? 0 }} yesterday</span>
+            </div>
+        </div>
+
+        <!-- User Engagement -->
+        <div class="glass-card p-6 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+            <div
+                class="absolute top-0 right-0 w-32 h-32 bg-indigo-100 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-110 transition-transform">
+            </div>
+            <dt class="text-sm font-medium text-slate-500 truncate z-10 relative">Platform Health</dt>
+            <dd class="mt-2 text-4xl font-bold text-slate-900 z-10 relative">100%</dd>
+            <div class="mt-4 flex items-center text-sm text-slate-400 font-medium z-10 relative">
+                <span>All systems operational</span>
             </div>
         </div>
     </div>
 
-    <!-- CSS Animasyonları -->
-    <style>
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .animate-fade-in-up {
-            animation: fadeInUp 0.5s ease-out;
-        }
-        
-        .hover-lift {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .hover-lift:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-    </style>
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Recent Activity Chart Area (Placeholder) -->
+        <div class="lg:col-span-2 glass-card p-6 min-h-[400px]">
+            <h3 class="font-display font-semibold text-lg text-slate-800 mb-6">Engagement Overview</h3>
+            <div
+                class="w-full h-64 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-center text-slate-400 font-medium overflow-hidden relative">
+                <!-- Using a simple HTML/CSS bar chart representation since we dont have chart.js setup in the example -->
+                <div class="flex items-end gap-2 h-40 w-full px-4 justify-between">
+                    @foreach($chartData['data'] as $index => $data)
+                        <div class="flex flex-col items-center gap-2 group w-full">
+                            <div class="w-full bg-primary-100 rounded-t-lg relative group-hover:bg-primary-200 transition-colors"
+                                style="height: {{ $data > 0 ? ($data * 10) + 10 : 2 }}px; max-height: 100%;">
+                                <div
+                                    class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded pointer-events-none transition-opacity">
+                                    {{ $data }} views
+                                </div>
+                            </div>
+                            <span class="text-xs text-slate-500">{{ $chartData['labels'][$index] }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
 
-    <!-- JavaScript -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Animasyonlu giriş
-            const cards = document.querySelectorAll('.bg-white');
-            cards.forEach((card, index) => {
-                card.style.animationDelay = `${index * 0.1}s`;
-                card.classList.add('animate-fade-in-up');
-            });
-            
-            // Hover efektleri
-            const statCards = document.querySelectorAll('.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 > div');
-            statCards.forEach(card => {
-                card.classList.add('hover-lift');
-            });
+        <!-- Recent Campaigns List -->
+        <div class="glass-card p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="font-display font-semibold text-lg text-slate-800">Recent Campaigns</h3>
+                <a href="{{ route('campaigns.index') }}"
+                    class="text-sm font-medium text-primary-600 hover:text-primary-700">View all</a>
+            </div>
 
-            // Chart.js Grafik
-            const ctx = document.getElementById('readingChart');
-            if (ctx) {
-                const chartData = @json($chartData ?? ['labels' => [], 'data' => []]);
-                
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: chartData.labels,
-                        datasets: [{
-                            label: 'Günlük Okunma',
-                            data: chartData.data,
-                            borderColor: 'rgb(99, 102, 241)',
-                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: 'rgb(99, 102, 241)',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 6,
-                            pointHoverRadius: 8
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(0, 0, 0, 0.1)'
-                                },
-                                ticks: {
-                                    stepSize: 1
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        },
-                        elements: {
-                            point: {
-                                hoverBackgroundColor: 'rgb(99, 102, 241)'
-                            }
-                        }
-                    }
-                });
-            }
-        });
-    </script>
-</x-app-layout> 
+            <div class="space-y-4">
+                @forelse($recentCampaigns as $campaign)
+                    <!-- Campaign Item -->
+                    <a href="{{ route('campaigns.show', $campaign) }}"
+                        class="flex items-center p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
+                        <div
+                            class="w-10 h-10 rounded-lg bg-primary-100 text-primary-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-slate-900 truncate">{{ $campaign->name }}</p>
+                            <p class="text-xs text-slate-500 truncate">{{ $campaign->created_at->diffForHumans() }}</p>
+                        </div>
+                        <div class="inline-flex items-center text-sm font-semibold text-slate-900">
+                            {{ $campaign->events_count }}
+                        </div>
+                    </a>
+                @empty
+                    <div class="text-center py-4">
+                        <p class="text-sm text-slate-500">No campaigns yet</p>
+                    </div>
+                @endforelse
+            </div>
+
+            <a href="{{ route('campaigns.create') }}"
+                class="w-full mt-6 flex justify-center py-2 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transform transition-all hover:-translate-y-0.5">
+                New Campaign
+            </a>
+        </div>
+    </div>
+</x-app-layout>

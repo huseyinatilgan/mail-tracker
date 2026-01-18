@@ -192,3 +192,5 @@ Eğer bir güvenlik açığı bulursanız, lütfen doğrudan repository maintain
 - `composer audit` ile güvenlik açıklarını kontrol edin
 - Güvenlik yamalarını hemen uygulayın
 
+
+
